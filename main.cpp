@@ -1,26 +1,27 @@
 #include "raylib.h"
-#include <iostream>
+#include "Player.h"
+#include "Zumbis.h"
 
-int main(){
+using namespace players;
+using namespace enemies;
+
+int main(void)
+{
     // Initialization
     //--------------------------------------------------------------------------------------
-    //int monitor = GetCurrentMonitor();
-    //std::cout << "Monitor: " << monitor << std::endl;
-    int screenWidth = 400;//GetMonitorWidth(monitor);
-    int screenHeight = 400;//GetMonitorHeight(monitor);
+    const int screenWidth = 800;
+    const int screenHeight = 450;
 
-    InitWindow(screenWidth, screenHeight, "raylib");
+    InitWindow(screenWidth, screenHeight, "raylib [core] example - keyboard input");
 
-    Camera camera = { 0 };
-    camera.position = (Vector3){ 10.0f, 10.0f, 8.0f };
-    camera.target = (Vector3){ 0.0f, 0.0f, 0.0f };
-    camera.up = (Vector3){ 0.0f, 1.0f, 0.0f };
-    camera.fovy = 60.0f;
-    camera.projection = CAMERA_PERSPECTIVE;
-    
-    SetCameraMode(camera, CAMERA_ORBITAL);
+    Player player1 = Player({400, 280, 40, 40}, RED);
+    Zumbie zumbis = Zumbie({400, 180, 40, 40}, BLUE);
 
-    Vector3 cubePosition = { 0 };
+    Camera2D camera = { 0 };
+    camera.target = (Vector2){ player1.getPositionX() + 20.0f, player1.getPositionY() + 20.0f };
+    camera.offset = (Vector2){ screenWidth/2.0f, screenHeight/2.0f };
+    camera.rotation = 0.0f;
+    camera.zoom = 1.0f;
 
     SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
@@ -30,7 +31,12 @@ int main(){
     {
         // Update
         //----------------------------------------------------------------------------------
-        UpdateCamera(&camera);
+        player1.update();
+        camera.target = (Vector2){ player1.getPositionX() + 20.0f, player1.getPositionY() + 20.0f };
+        camera.zoom += ((float)GetMouseWheelMove()*0.05f);
+        if (camera.zoom > 3.0f) camera.zoom = 3.0f;
+        else if (camera.zoom < 0.1f) camera.zoom = 0.1f;
+        zumbis.update(player1.getVector());
         //----------------------------------------------------------------------------------
 
         // Draw
@@ -39,17 +45,14 @@ int main(){
 
             ClearBackground(RAYWHITE);
 
-            BeginMode3D(camera);
+            BeginMode2D(camera);
 
-                DrawCube(cubePosition, 2.0f, 2.0f, 2.0f, RED);
-                DrawCubeWires(cubePosition, 2.0f, 2.0f, 2.0f, MAROON);
-                DrawGrid(10, 1.0f);
+                player1.draw();
+                zumbis.draw();
 
-            EndMode3D();
+            EndMode2D();
 
-            DrawText("This is a raylib example", 10, 40, 20, DARKGRAY);
-
-            DrawFPS(10, 10);
+            DrawText("move the ball with arrow keys", 10, 10, 20, DARKGRAY);
 
         EndDrawing();
         //----------------------------------------------------------------------------------
