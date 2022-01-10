@@ -12,11 +12,11 @@ class Entite{
             this->shape = rec;
         }
 
-        void MoveX(int movement){
+        void MoveX(float movement){
             shape.x += movement;
         }
 
-        void MoveY(int movement){
+        void MoveY(float movement){
             shape.y += movement;
         }
 

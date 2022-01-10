@@ -2,9 +2,6 @@
 #include "Player.h"
 #include "Zumbis.h"
 
-using namespace players;
-using namespace enemies;
-
 int main(void)
 {
     // Initialization
@@ -12,10 +9,10 @@ int main(void)
     const int screenWidth = 800;
     const int screenHeight = 450;
 
-    InitWindow(screenWidth, screenHeight, "raylib [core] example - keyboard input");
+    InitWindow(screenWidth, screenHeight, "raylib [core] example - 2d camera");
 
-    Player player1 = Player({400, 280, 40, 40}, RED);
-    Zumbie zumbis = Zumbie({400, 180, 40, 40}, BLUE);
+    players::Player player1 = players::Player({ 400, 280, 40, 40 }, RED);
+    enemies::Zumbie zumbie = enemies::Zumbie({ 300, 280, 40, 40 }, BLUE);
 
     Camera2D camera = { 0 };
     camera.target = (Vector2){ player1.getPositionX() + 20.0f, player1.getPositionY() + 20.0f };
@@ -23,20 +20,44 @@ int main(void)
     camera.rotation = 0.0f;
     camera.zoom = 1.0f;
 
-    SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
+    SetTargetFPS(60);                   // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
 
     // Main game loop
-    while (!WindowShouldClose())    // Detect window close button or ESC key
+    while (!WindowShouldClose())        // Detect window close button or ESC key
     {
         // Update
         //----------------------------------------------------------------------------------
+
+        // Player movement
+        // if (IsKeyDown(KEY_RIGHT)) player1.MoveX(2);
+        // else if (IsKeyDown(KEY_LEFT)) player1.MoveX(-2);
         player1.update();
-        camera.target = (Vector2){ player1.getPositionX() + 20.0f, player1.getPositionY() + 20.0f };
+        zumbie.update(player1.getVector());
+
+        // Camera target follows player
+        camera.target = (Vector2){player1.getPositionX() + 20.0f, player1.getPositionY() + 20.0f };
+
+        // Camera rotation controls
+        if (IsKeyDown(KEY_A)) camera.rotation--;
+        else if (IsKeyDown(KEY_S)) camera.rotation++;
+
+        // Limit camera rotation to 80 degrees (-40 to 40)
+        if (camera.rotation > 40) camera.rotation = 40;
+        else if (camera.rotation < -40) camera.rotation = -40;
+
+        // Camera zoom controls
         camera.zoom += ((float)GetMouseWheelMove()*0.05f);
+
         if (camera.zoom > 3.0f) camera.zoom = 3.0f;
         else if (camera.zoom < 0.1f) camera.zoom = 0.1f;
-        zumbis.update(player1.getVector());
+
+        // Camera reset (zoom and rotation)
+        if (IsKeyPressed(KEY_R))
+        {
+            camera.zoom = 1.0f;
+            camera.rotation = 0.0f;
+        }
         //----------------------------------------------------------------------------------
 
         // Draw
@@ -48,11 +69,9 @@ int main(void)
             BeginMode2D(camera);
 
                 player1.draw();
-                zumbis.draw();
+                zumbie.draw();
 
             EndMode2D();
-
-            DrawText("move the ball with arrow keys", 10, 10, 20, DARKGRAY);
 
         EndDrawing();
         //----------------------------------------------------------------------------------
